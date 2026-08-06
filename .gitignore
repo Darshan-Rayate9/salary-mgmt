@@ -1,0 +1,18 @@
+# Backend (Maven)
+api/target/
+api/data/*.db
+api/data/*.db-*
+
+# Frontend (Angular / Node)
+web/node_modules/
+web/dist/
+web/.angular/
+web/out-tsc/
+
+# OS
+.DS_Store
+
+# IDE
+.idea/
+*.iml
+.vscode/
