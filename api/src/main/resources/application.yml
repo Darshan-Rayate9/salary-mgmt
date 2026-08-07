@@ -1,0 +1,59 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: salary-management
+  datasource:
+    # WAL journal mode: readers are never blocked by an in-flight write (see
+    # ARCHITECTURE.md). foreign_keys=ON because SQLite disables FK enforcement
+    # by default per-connection.
+    url: jdbc:sqlite:${SALARY_DB_PATH:./data/salary.db}?journal_mode=WAL&foreign_keys=ON
+    driver-class-name: org.sqlite.JDBC
+  jpa:
+    open-in-view: false
+    hibernate:
+      # Schema owned by Flyway migrations, not Hibernate. "validate" was the
+      # original intent (catch drift between entities and schema at boot),
+      # but SQLite's dynamic type affinity breaks it: an id column declared
+      # `INTEGER PRIMARY KEY AUTOINCREMENT` (SQLite requires exactly that
+      # wording for autoincrement - BIGINT is not accepted) is reported by
+      # the driver as INTEGER, while Hibernate expects BIGINT for a mapped
+      # Long, so validate fails at boot even on a correct schema - confirmed
+      # by actually running it, not a hypothetical. "none" instead; the
+      # repository tests exercise the real Flyway schema directly, so actual
+      # drift still surfaces as a query failure, just not as a boot-time check.
+      ddl-auto: none
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  data:
+    web:
+      pageable:
+        # Aligns the `page` query param with the 1-based convention documented
+        # in ARCHITECTURE.md's pagination envelope (Spring's default is 0-based).
+        one-indexed-parameters: true
+        # ARCHITECTURE.md documents ?page=&limit= (and the frontend calls it that
+        # way) - Spring's own default query param name is "size", not "limit".
+        # Found by actually calling the endpoint: limit= was silently ignored
+        # and every request fell back to the @PageableDefault of 20.
+        size-parameter: limit
+
+app:
+  seed:
+    # The single HTTP Basic HR Manager account (see SecurityConfig). Override the
+    # password via SEED_ADMIN_PASSWORD in any real deployment - the default is
+    # for local dev only.
+    admin-username: ${SEED_ADMIN_USERNAME:hr.manager}
+    admin-password: ${SEED_ADMIN_PASSWORD:ChangeMe123!}
+    employee-count: ${SEED_EMPLOYEE_COUNT:10000}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never

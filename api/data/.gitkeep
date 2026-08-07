@@ -1,0 +1,3 @@
+Placeholder so this directory exists in git. The actual salary.db file
+(and its -wal/-shm siblings from WAL mode) are gitignored - see the repo's
+root .gitignore.
