@@ -1,0 +1,40 @@
+spring:
+  # Excludes EmployeeSeeder (@Profile("!test")) - 10k rows of generated data
+  # has no business slowing down a context-loads test.
+  profiles:
+    active: test
+  datasource:
+    # Shared-cache in-memory SQLite: fast and file-free, but every test class
+    # sees a fresh DB while a single test class's connections share one DB
+    # (Hikari pool capped at 1 so they don't accidentally see different DBs).
+    url: jdbc:sqlite:file::memory:?cache=shared
+    driver-class-name: org.sqlite.JDBC
+    hikari:
+      maximum-pool-size: 1
+  jpa:
+    open-in-view: false
+    hibernate:
+      # ddl-auto: none - see application.yml for why "validate" doesn't work
+      # against SQLite's type affinity. Kept consistent with prod on purpose.
+      ddl-auto: none
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  data:
+    web:
+      pageable:
+        # Mirrors src/main/resources/application.yml. This file *replaces*
+        # the main one for tests rather than merging with it (test-classes
+        # comes before classes on the test classpath) - found via
+        # EmployeeApiIntegrationTest returning page=2/limit=20 (both wrong)
+        # despite the production config saying otherwise; the test simply
+        # wasn't exercising that config at all until it was duplicated here.
+        one-indexed-parameters: true
+        size-parameter: limit
+
+app:
+  seed:
+    # Credentials for the in-memory HTTP Basic account the security tests use.
+    admin-username: test.admin
+    admin-password: TestPassword123!
