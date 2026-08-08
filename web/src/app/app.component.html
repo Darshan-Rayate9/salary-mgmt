@@ -1,0 +1,13 @@
+<mat-toolbar color="primary">
+  <span>ACME Salary Management</span>
+  <span class="spacer"></span>
+  @if (auth.isAuthenticated()) {
+    <a mat-button routerLink="/employees">Employees</a>
+    <a mat-button routerLink="/dashboard">Dashboard</a>
+    <button mat-button (click)="logout()">Logout</button>
+  }
+</mat-toolbar>
+
+<main class="content">
+  <router-outlet></router-outlet>
+</main>
