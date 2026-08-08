@@ -12,6 +12,7 @@ import com.acme.salary.exception.ConflictException;
 import com.acme.salary.exception.ResourceNotFoundException;
 import com.acme.salary.repository.EmployeeRepository;
 import com.acme.salary.repository.SalaryRecordRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -19,15 +20,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final SalaryRecordRepository salaryRecordRepository;
-
-    public EmployeeService(EmployeeRepository employeeRepository, SalaryRecordRepository salaryRecordRepository) {
-        this.employeeRepository = employeeRepository;
-        this.salaryRecordRepository = salaryRecordRepository;
-    }
 
     public PageResponse<EmployeeResponse> listEmployees(
             String search, String department, String country, String level, String status, Pageable pageable) {

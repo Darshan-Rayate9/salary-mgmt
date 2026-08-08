@@ -13,6 +13,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -30,6 +33,8 @@ import java.time.LocalDate;
                 @Index(name = "idx_salary_records_employee_effective_date", columnList = "employee_id, effective_date")
         }
 )
+@Getter
+@Setter
 public class SalaryRecord {
 
     @Id
@@ -59,70 +64,11 @@ public class SalaryRecord {
 
     @Convert(converter = InstantStringConverter.class)
     @Column(name = "created_at", nullable = false, updatable = false)
+    @Setter(AccessLevel.NONE) // managed by @PrePersist, never set from outside
     private Instant createdAt;
 
     @PrePersist
     protected void onCreate() {
         this.createdAt = Instant.now();
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Employee getEmployee() {
-        return employee;
-    }
-
-    public void setEmployee(Employee employee) {
-        this.employee = employee;
-    }
-
-    public BigDecimal getAmount() {
-        return amount;
-    }
-
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
-    }
-
-    public String getCurrencyCode() {
-        return currencyCode;
-    }
-
-    public void setCurrencyCode(String currencyCode) {
-        this.currencyCode = currencyCode;
-    }
-
-    public BigDecimal getUsdEquivalent() {
-        return usdEquivalent;
-    }
-
-    public void setUsdEquivalent(BigDecimal usdEquivalent) {
-        this.usdEquivalent = usdEquivalent;
-    }
-
-    public LocalDate getEffectiveDate() {
-        return effectiveDate;
-    }
-
-    public void setEffectiveDate(LocalDate effectiveDate) {
-        this.effectiveDate = effectiveDate;
-    }
-
-    public String getReason() {
-        return reason;
-    }
-
-    public void setReason(String reason) {
-        this.reason = reason;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
     }
 }

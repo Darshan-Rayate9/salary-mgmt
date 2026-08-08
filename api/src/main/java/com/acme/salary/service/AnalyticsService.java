@@ -4,6 +4,7 @@ import com.acme.salary.dto.AnalyticsSummaryResponse;
 import com.acme.salary.dto.DistributionBucketResponse;
 import com.acme.salary.dto.GroupAggregateResponse;
 import com.acme.salary.repository.AnalyticsRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,13 +12,10 @@ import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class AnalyticsService {
 
     private final AnalyticsRepository analyticsRepository;
-
-    public AnalyticsService(AnalyticsRepository analyticsRepository) {
-        this.analyticsRepository = analyticsRepository;
-    }
 
     public AnalyticsSummaryResponse summary() {
         return analyticsRepository.summary();

@@ -1,5 +1,6 @@
 package com.acme.salary.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -20,13 +21,10 @@ import java.util.List;
  * row counts (10k+ employees for the seed script).
  */
 @Component
+@RequiredArgsConstructor
 public class EmployeeBulkWriter {
 
     private final JdbcTemplate jdbcTemplate;
-
-    public EmployeeBulkWriter(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     /**
      * One row at a time, not JDBC's batch protocol - IDENTITY-generated keys

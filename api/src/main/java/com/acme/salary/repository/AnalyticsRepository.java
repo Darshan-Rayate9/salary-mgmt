@@ -3,6 +3,7 @@ package com.acme.salary.repository;
 import com.acme.salary.dto.AnalyticsSummaryResponse;
 import com.acme.salary.dto.DistributionBucketResponse;
 import com.acme.salary.dto.GroupAggregateResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -19,16 +20,13 @@ import java.util.Map;
  * and JdbcTemplate keeps the actual SQL visible and easy to reason about.
  */
 @Repository
+@RequiredArgsConstructor
 public class AnalyticsRepository {
 
     private static final String ACTIVE_FILTER =
             "employment_status = 'ACTIVE' AND usd_equivalent IS NOT NULL";
 
     private final JdbcTemplate jdbcTemplate;
-
-    public AnalyticsRepository(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     public AnalyticsSummaryResponse summary() {
         Map<String, Object> stats = jdbcTemplate.queryForMap("""

@@ -4,6 +4,7 @@ import com.acme.salary.dto.AnalyticsSummaryResponse;
 import com.acme.salary.dto.DistributionBucketResponse;
 import com.acme.salary.dto.GroupAggregateResponse;
 import com.acme.salary.service.AnalyticsService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,13 +13,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/analytics")
+@RequiredArgsConstructor
 public class AnalyticsController {
 
     private final AnalyticsService analyticsService;
-
-    public AnalyticsController(AnalyticsService analyticsService) {
-        this.analyticsService = analyticsService;
-    }
 
     @GetMapping("/summary")
     public AnalyticsSummaryResponse summary() {

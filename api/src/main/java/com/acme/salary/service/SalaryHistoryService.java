@@ -7,6 +7,7 @@ import com.acme.salary.entity.SalaryRecord;
 import com.acme.salary.exception.ResourceNotFoundException;
 import com.acme.salary.repository.EmployeeRepository;
 import com.acme.salary.repository.SalaryRecordRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,20 +15,12 @@ import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class SalaryHistoryService {
 
     private final EmployeeRepository employeeRepository;
     private final SalaryRecordRepository salaryRecordRepository;
     private final CurrencyConversionService currencyConversionService;
-
-    public SalaryHistoryService(
-            EmployeeRepository employeeRepository,
-            SalaryRecordRepository salaryRecordRepository,
-            CurrencyConversionService currencyConversionService) {
-        this.employeeRepository = employeeRepository;
-        this.salaryRecordRepository = salaryRecordRepository;
-        this.currencyConversionService = currencyConversionService;
-    }
 
     public List<SalaryRecordResponse> listHistory(Long employeeId) {
         requireEmployee(employeeId);
