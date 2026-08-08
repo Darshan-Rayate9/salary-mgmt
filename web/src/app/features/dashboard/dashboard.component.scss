@@ -1,0 +1,44 @@
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin: 16px 0 24px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.chart-card {
+  padding: 16px;
+}
+
+.chart-card h2 {
+  margin: 0 0 12px;
+  font-size: 16px;
+}
+
+.chart {
+  position: relative;
+  height: 280px;
+}

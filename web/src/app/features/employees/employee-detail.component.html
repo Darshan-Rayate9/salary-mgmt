@@ -1,0 +1,74 @@
+<a mat-button routerLink="/employees"><mat-icon>arrow_back</mat-icon> Back to directory</a>
+
+@if (loading) {
+  <mat-spinner diameter="32"></mat-spinner>
+} @else if (employee) {
+  <div class="detail-header">
+    <div>
+      <h1>{{ employee.firstName }} {{ employee.lastName }}</h1>
+      <span class="code">{{ employee.employeeCode }}</span>
+      <span class="status" [class.terminated]="employee.employmentStatus === 'TERMINATED'">
+        {{ employee.employmentStatus }}
+      </span>
+    </div>
+    <div class="actions">
+      <button mat-stroked-button (click)="edit()"><mat-icon>edit</mat-icon> Edit</button>
+      <button mat-stroked-button color="warn" (click)="remove()"><mat-icon>delete</mat-icon> Delete</button>
+    </div>
+  </div>
+
+  <mat-card class="info-card">
+    <mat-card-content>
+      <div class="grid">
+        <div><span class="label">Department</span>{{ employee.department }}</div>
+        <div><span class="label">Job title</span>{{ employee.jobTitle }}</div>
+        <div><span class="label">Level</span>{{ employee.level }}</div>
+        <div><span class="label">Country</span>{{ employee.country }}</div>
+        <div><span class="label">Email</span>{{ employee.email }}</div>
+        <div><span class="label">Hire date</span>{{ employee.hireDate }}</div>
+        <div>
+          <span class="label">Current salary</span>
+          @if (employee.currentSalaryAmount !== null) {
+            {{ employee.currentSalaryAmount | number: '1.0-2' }} {{ employee.currentSalaryCurrency }}
+          } @else {
+            —
+          }
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <div class="history-header">
+    <h2>Salary history</h2>
+    <button mat-raised-button color="primary" (click)="addRaise()">
+      <mat-icon>add</mat-icon> Add salary record
+    </button>
+  </div>
+
+  @if (history.length === 0) {
+    <p class="empty">No salary records yet.</p>
+  } @else {
+    <table mat-table [dataSource]="history" class="mat-elevation-z1">
+      <ng-container matColumnDef="effectiveDate">
+        <th mat-header-cell *matHeaderCellDef>Effective date</th>
+        <td mat-cell *matCellDef="let r">{{ r.effectiveDate }}</td>
+      </ng-container>
+      <ng-container matColumnDef="amount">
+        <th mat-header-cell *matHeaderCellDef>Amount</th>
+        <td mat-cell *matCellDef="let r">{{ r.amount | number: '1.0-2' }} {{ r.currencyCode }}</td>
+      </ng-container>
+      <ng-container matColumnDef="usdEquivalent">
+        <th mat-header-cell *matHeaderCellDef>USD equivalent</th>
+        <td mat-cell *matCellDef="let r">{{ r.usdEquivalent | number: '1.0-2' }} USD</td>
+      </ng-container>
+      <ng-container matColumnDef="reason">
+        <th mat-header-cell *matHeaderCellDef>Reason</th>
+        <td mat-cell *matCellDef="let r">{{ r.reason }}</td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="historyColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: historyColumns"></tr>
+    </table>
+  }
+} @else {
+  <p class="empty">Employee not found.</p>
+}

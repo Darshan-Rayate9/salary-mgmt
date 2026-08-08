@@ -1,0 +1,54 @@
+<h1>Compensation Dashboard</h1>
+
+@if (loading) {
+  <mat-spinner diameter="32"></mat-spinner>
+} @else if (summary) {
+  <div class="stat-grid">
+    <mat-card class="stat">
+      <span class="stat-label">Active headcount</span>
+      <span class="stat-value">{{ summary.headcount | number }}</span>
+    </mat-card>
+    <mat-card class="stat">
+      <span class="stat-label">Total payroll (USD)</span>
+      <span class="stat-value">{{ summary.totalPayrollCostUsd | number: '1.0-0' }}</span>
+    </mat-card>
+    <mat-card class="stat">
+      <span class="stat-label">Average salary (USD)</span>
+      <span class="stat-value">{{ summary.avgSalaryUsd | number: '1.0-0' }}</span>
+    </mat-card>
+    <mat-card class="stat">
+      <span class="stat-label">Median salary (USD)</span>
+      <span class="stat-value">{{ summary.medianSalaryUsd | number: '1.0-0' }}</span>
+    </mat-card>
+    <mat-card class="stat">
+      <span class="stat-label">Min salary (USD)</span>
+      <span class="stat-value">{{ summary.minSalaryUsd | number: '1.0-0' }}</span>
+    </mat-card>
+    <mat-card class="stat">
+      <span class="stat-label">Max salary (USD)</span>
+      <span class="stat-value">{{ summary.maxSalaryUsd | number: '1.0-0' }}</span>
+    </mat-card>
+  </div>
+
+  <div class="chart-grid">
+    <mat-card class="chart-card">
+      <h2>Pay by department</h2>
+      <div class="chart"><canvas baseChart [type]="'bar'" [data]="byDepartmentChart" [options]="salaryChartOptions"></canvas></div>
+    </mat-card>
+
+    <mat-card class="chart-card">
+      <h2>Pay by level</h2>
+      <div class="chart"><canvas baseChart [type]="'bar'" [data]="byLevelChart" [options]="salaryChartOptions"></canvas></div>
+    </mat-card>
+
+    <mat-card class="chart-card">
+      <h2>Pay by country</h2>
+      <div class="chart"><canvas baseChart [type]="'bar'" [data]="byCountryChart" [options]="salaryChartOptions"></canvas></div>
+    </mat-card>
+
+    <mat-card class="chart-card">
+      <h2>Salary distribution (USD)</h2>
+      <div class="chart"><canvas baseChart [type]="'bar'" [data]="distributionChart" [options]="countChartOptions"></canvas></div>
+    </mat-card>
+  </div>
+}
