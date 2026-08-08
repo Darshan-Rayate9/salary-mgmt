@@ -7,7 +7,7 @@ import java.time.LocalDate;
 
 /**
  * Same rationale as InstantStringConverter, found the same way: EmployeeBulkWriter
- * (raw JDBC, used by CSV import and the seed script) writes LocalDate columns as
+ * (raw JDBC, used by the seed script) writes LocalDate columns as
  * plain ISO-8601 text via setString(). Hibernate's default LocalDate mapping goes
  * through java.sql.Date (setDate()/getDate()), and the SQLite driver's getDate()
  * expects a different string format than plain "yyyy-MM-dd" - self-consistent

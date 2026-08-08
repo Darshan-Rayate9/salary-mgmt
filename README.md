@@ -78,8 +78,8 @@ credentials, 200 with), and the whole UI was walked through in a real browser:
 login, directory, employee detail + salary history, and the analytics dashboard
 with live charts, all against the real backend.
 
-Real bugs were found and fixed by actually running it at each stage - see the
-`fix(backend)` / `fix(frontend)` commits. Highlights: `hibernate-community-dialects`
+Real bugs were found and fixed by actually running it at each stage.
+Highlights: `hibernate-community-dialects`
 version drift; `ddl-auto: validate` vs. SQLite type affinity; a missing
 `AuthenticationEntryPoint` (403 instead of 401); SQLite's driver mis-parsing
 Hibernate's `Instant`/`LocalDate` output (explicit `AttributeConverter`s); the

@@ -13,11 +13,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Shared bulk-write path for CSV import and the employee seed script - both
- * need "insert a chunk of employees (and their salary records) as one
- * transaction," so it lives here once rather than twice. Plain JdbcTemplate,
- * not JPA: bypassing the persistence-context/dirty-checking overhead matters
- * at these row counts (10k+ employees for the seed script).
+ * Bulk-write path for the employee seed script - "insert a chunk of employees
+ * (and their salary records) as one transaction." Kept as its own component so
+ * any future bulk-import path can reuse it. Plain JdbcTemplate, not JPA:
+ * bypassing the persistence-context/dirty-checking overhead matters at these
+ * row counts (10k+ employees for the seed script).
  */
 @Component
 public class EmployeeBulkWriter {

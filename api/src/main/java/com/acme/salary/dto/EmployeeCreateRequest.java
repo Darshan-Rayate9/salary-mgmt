@@ -11,8 +11,7 @@ import java.time.LocalDate;
  * No salary field on purpose - creating an employee is purely the /employees
  * resource; salary is added via a separate call to the salary-history
  * sub-resource. That keeps "an employee with no salary record yet" a real,
- * reachable state, which is what makes the hard-delete correction path in
- * EmployeeService meaningful (see ARCHITECTURE.md).
+ * reachable state (created now, first salary recorded in a follow-up call).
  */
 public record EmployeeCreateRequest(
         @NotBlank(message = "Employee code is required") @Size(max = 20) String employeeCode,

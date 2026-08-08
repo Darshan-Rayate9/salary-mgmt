@@ -185,7 +185,7 @@ Every non-2xx response uses one shape:
 | 401 | Missing or invalid credentials |
 | 404 | Resource does not exist |
 | 409 | Conflict (e.g., duplicate `employeeCode` on create) |
-| 422 | Valid JSON, business-rule violation (e.g., salary `effectiveDate` in the future) |
+| 422 | Valid JSON, business-rule violation (e.g., an unsupported currency code on a salary record) |
 | 500 | Unexpected server error — logged server-side, generic message to the client, no stack traces |
 
 ## Failure modes
@@ -201,9 +201,12 @@ Every non-2xx response uses one shape:
 
 **Backend** (JUnit 5 + Mockito):
 - Service-layer unit tests (mocked repositories) for business logic: current-salary
-  resolution, USD snapshot calculation, soft-delete behavior. Date-dependent logic
-  goes through an injected `Clock` so tests stay deterministic.
-- `@WebMvcTest` controller tests for request validation, status codes, pagination.
+  resolution, USD snapshot calculation, soft-delete behavior. Determinism comes
+  from fixed test fixtures and a fixed random seed in the seed script — no
+  wall-clock, network, or filesystem dependencies.
+- Request validation, status codes, and pagination are covered by the
+  `@SpringBootTest` integration test (`EmployeeApiIntegrationTest`) rather than
+  isolated `@WebMvcTest` slices.
 - `@DataJpaTest` runs against the same Flyway-managed schema as production
   (no separate `ddl-auto` schema) for custom repository queries — the
   aggregate SQL is exactly what needs correctness coverage, and this catches
