@@ -4,6 +4,16 @@ Web-based salary management for ACME's HR Manager. See [REQUIREMENTS.md](REQUIRE
 for scope (what's in, what's deliberately left out, and why) and
 [ARCHITECTURE.md](ARCHITECTURE.md) for the technical design and trade-offs.
 
+## Live demo
+
+**URL:** https://acme-salary-management-2j30.onrender.com
+
+Log in as **`hr.manager`** / **`Admin@123`**.
+
+> Hosted on Render's free tier — the first request after a period of inactivity
+> may take ~30–60s while the instance wakes up. The database is seeded with
+> 10,000 employees on boot.
+
 ## Stack
 
 Spring Boot 3 (Java 21) + Angular (Angular Material), SQLite, one Docker image.
