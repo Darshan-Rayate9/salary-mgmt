@@ -1,5 +1,6 @@
 server:
-  port: 8080
+  # ${PORT} is injected by the host (e.g. Render); falls back to 8080 locally.
+  port: ${PORT:8080}
 
 spring:
   application:

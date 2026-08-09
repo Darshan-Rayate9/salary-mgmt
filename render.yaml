@@ -1,0 +1,27 @@
+# Render Blueprint: deploys the single Docker image (Angular UI + Spring Boot API)
+# as one free web service. See ARCHITECTURE.md ("One deployable unit") and SETUP.md.
+#
+# Free tier has no persistent disk, so the SQLite file is ephemeral - fine here
+# because the seed script is idempotent and re-creates the 10k dataset on boot,
+# so the demo is always in a known, functional state (see ARCHITECTURE.md
+# "Deployment"). Add a paid disk mounted at /app/data if edits must survive
+# redeploys.
+services:
+  - type: web
+    name: acme-salary-management
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /actuator/health
+    autoDeploy: true
+    envVars:
+      # Secret: leave the value blank here; set it in the Render dashboard on the
+      # first deploy. sync:false keeps it out of the repo.
+      - key: SEED_ADMIN_PASSWORD
+        sync: false
+      - key: SEED_ADMIN_USERNAME
+        value: hr.manager
+      # Let the JVM use more than the default 25% of the 512MB free instance.
+      - key: JAVA_TOOL_OPTIONS
+        value: -XX:MaxRAMPercentage=75.0

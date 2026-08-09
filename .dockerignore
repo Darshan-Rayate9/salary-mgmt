@@ -1,0 +1,28 @@
+# Keep the Docker build context small and correct. Anything the image needs is
+# rebuilt *inside* the container (npm ci, mvn package); copying host build output
+# or host node_modules (macOS/arm64 native binaries) into a Linux image breaks
+# the build, so exclude them here.
+
+# Node / Angular - reinstalled and rebuilt in stage 1
+web/node_modules
+web/dist
+web/.angular
+web/out-tsc
+
+# Maven - rebuilt in stage 2
+api/target
+
+# Local SQLite files - the seed recreates data on boot
+api/data/*.db
+api/data/*.db-*
+data/*.db
+data/*.db-*
+
+# VCS, OS, IDE cruft
+.git
+.gitignore
+**/.DS_Store
+.idea
+.vscode
+*.iml
+main-backup
