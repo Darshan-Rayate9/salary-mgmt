@@ -96,12 +96,40 @@ class SalaryHistoryServiceTest {
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
+    @Test
+    void addRecord_futureEffectiveDate_throwsIllegalArgument() {
+        Employee employee = sampleEmployee();
+        when(employeeRepository.findById(1L)).thenReturn(Optional.of(employee));
+
+        // A salary can't take effect before it's even been decided.
+        var request = new SalaryRecordCreateRequest(
+                new BigDecimal("100000.00"), "GBP", LocalDate.now().plusDays(1), "Merit increase");
+
+        assertThatThrownBy(() -> newService().addRecord(1L, request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("future");
+    }
+
+    @Test
+    void addRecord_effectiveDateBeforeHireDate_throwsIllegalArgument() {
+        Employee employee = sampleEmployee(); // hired 2019-03-01
+        when(employeeRepository.findById(1L)).thenReturn(Optional.of(employee));
+
+        var request = new SalaryRecordCreateRequest(
+                new BigDecimal("100000.00"), "GBP", LocalDate.of(2018, 1, 1), "Back-dated record");
+
+        assertThatThrownBy(() -> newService().addRecord(1L, request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("hire date");
+    }
+
     private Employee sampleEmployee() {
         Employee employee = new Employee();
         employee.setId(1L);
         employee.setEmployeeCode("E-1001");
         employee.setFirstName("Ada");
         employee.setLastName("Lovelace");
+        employee.setHireDate(LocalDate.of(2019, 3, 1));
         return employee;
     }
 

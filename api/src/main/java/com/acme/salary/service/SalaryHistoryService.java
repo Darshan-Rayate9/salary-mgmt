@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -37,6 +38,7 @@ public class SalaryHistoryService {
     @Transactional
     public SalaryRecordResponse addRecord(Long employeeId, SalaryRecordCreateRequest request) {
         Employee employee = requireEmployee(employeeId);
+        validateEffectiveDate(request.effectiveDate(), employee);
 
         if (!currencyConversionService.isSupported(request.currencyCode())) {
             throw new IllegalArgumentException("Unsupported currency code: " + request.currencyCode());
@@ -58,5 +60,21 @@ public class SalaryHistoryService {
         return employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "EMPLOYEE_NOT_FOUND", "No employee with id " + employeeId));
+    }
+
+    /**
+     * When a salary change is allowed to take effect: not in the future (a raise
+     * can't apply before it's decided) and not before the employee was hired.
+     */
+    private void validateEffectiveDate(LocalDate effectiveDate, Employee employee) {
+        if (effectiveDate.isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException(
+                    "Salary effective date cannot be in the future: " + effectiveDate);
+        }
+        if (employee.getHireDate() != null && effectiveDate.isBefore(employee.getHireDate())) {
+            throw new IllegalArgumentException(
+                    "Salary effective date " + effectiveDate
+                            + " is before the employee's hire date " + employee.getHireDate());
+        }
     }
 }
