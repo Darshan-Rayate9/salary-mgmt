@@ -94,8 +94,8 @@ Representative prompt:
 - **Scope** — what to build and (harder) what to leave out.
 - **Data model** — append-only `salary_records`, derived current salary, USD
   snapshot for cross-country analytics.
-- **Security posture** — single in-memory user, credentials in memory not
-  `localStorage`, no `WWW-Authenticate` header in front of the SPA.
+- **Security posture** — single in-memory user, credential in `sessionStorage`
+  (not `localStorage`), no `WWW-Authenticate` header in front of the SPA.
 - **Money correctness** — `BigDecimal` throughout, and dividing by the
   full-precision rate in `fromUsd` so a low-value currency like JPY doesn't
   accumulate rounding error.
@@ -120,7 +120,7 @@ each is documented at the point in the code where it was fixed.
 
 ## How I validated AI-generated code
 
-1. **Automated:** `mvn test` (46) and `npm test` (18) — fast, deterministic, no
+1. **Automated:** `mvn test` (48) and `npm test` (18) — fast, deterministic, no
    network/filesystem/wall-clock dependence.
 2. **API:** drove every endpoint with `curl` on the seeded 10k dataset (auth
    401/200, CRUD, salary history, all analytics).

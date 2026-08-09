@@ -9,6 +9,9 @@ describe('AuthService', () => {
   let httpMock: HttpTestingController;
 
   beforeEach(() => {
+    // AuthService persists to sessionStorage, which Karma keeps between tests -
+    // clear it so each test starts from a known, unauthenticated state.
+    sessionStorage.clear();
     TestBed.configureTestingModule({
       providers: [provideHttpClient(), provideHttpClientTesting()],
     });

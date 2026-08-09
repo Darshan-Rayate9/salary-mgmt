@@ -87,12 +87,50 @@ no separate frontend server, no `:4200`).
 
 ## Running the tests
 
+Both suites are fast and deterministic — no network, filesystem, or wall-clock
+dependencies — and run offline once dependencies are cached.
+
+### Backend (JUnit 5 + Mockito) — 48 tests
+
 ```bash
-cd api && mvn test           # 46 backend tests
-cd web && npm test          # 18 frontend tests (headless Chrome)
+cd api
+mvn test
 ```
 
-Frontend tests need Chrome/Chromium installed for the headless test runner.
+Runs the full suite: service-layer unit tests (mocked repositories),
+`@DataJpaTest` repository tests against the **real Flyway-managed SQLite schema**
+(not H2), and `@SpringBootTest` MockMvc integration tests. The 10k seed is
+skipped under the `test` profile, so the suite stays fast (typically < 30s).
+
+Run a single test class, or a single method:
+
+```bash
+mvn -Dtest=EmployeeServiceTest test
+mvn -Dtest=EmployeeServiceTest#createEmployee_valid_savesWithActiveStatusAndNoSalaryYet test
+```
+
+> Maven must run under **Java 21** (see Prerequisites). If `mvn -version` shows a
+> different JDK, set it explicitly:
+> ```bash
+> export JAVA_HOME="/opt/homebrew/opt/openjdk@21"
+> ```
+
+### Frontend (Jasmine + Karma) — 18 tests
+
+```bash
+cd web
+npm install                                    # first time only
+npm test                                        # interactive watch mode (opens Chrome)
+```
+
+For a single, non-interactive run (e.g. CI):
+
+```bash
+npm test -- --watch=false --browsers=ChromeHeadless
+```
+
+Frontend tests cover the auth service, HTTP interceptor, route guard, and the
+employee-list component. They need **Chrome/Chromium** installed for the runner.
 
 ---
 
@@ -103,9 +141,10 @@ Frontend tests need Chrome/Chromium installed for the headless test runner.
 - **Seeded data regenerates on a fresh DB** — the seeder is idempotent and
   only runs when the `employee` table is empty, so restarting with an existing
   DB keeps your changes.
-- **Auth is HTTP Basic**; the credentials are held in memory (not localStorage),
-  so refreshing the browser logs you out — log in again. This is a deliberate
-  security trade-off (see ARCHITECTURE.md).
+- **Auth is HTTP Basic**; the encoded credential is kept in `sessionStorage`
+  (not `localStorage`), so a page refresh keeps you logged in, but closing the
+  tab logs you out. Chosen over localStorage so a reversible Basic credential is
+  never persisted to disk long-term (see ARCHITECTURE.md).
 - **Overridable via environment variables:**
 
   | Variable | Default | Purpose |

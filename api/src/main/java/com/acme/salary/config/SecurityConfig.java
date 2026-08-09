@@ -75,9 +75,12 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
-                        // Angular's static build, served from the same origin (see ARCHITECTURE.md).
-                        .requestMatchers("/", "/index.html", "/assets/**", "/*.js", "/*.css", "/*.ico").permitAll()
-                        .anyRequest().authenticated())
+                        // Only the data API is protected. The Angular shell and its static
+                        // assets are public (the SPA is useless without the API anyway), and
+                        // permitting client routes lets a deep-link refresh (e.g. /employees)
+                        // reach SpaForwardController and boot Angular instead of hitting a 401.
+                        .requestMatchers("/api/**").authenticated()
+                        .anyRequest().permitAll())
                 .httpBasic(basic -> basic.authenticationEntryPoint(authenticationEntryPoint))
                 .exceptionHandling(handling -> handling.authenticationEntryPoint(authenticationEntryPoint));
         return http.build();

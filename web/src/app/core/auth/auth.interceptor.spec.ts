@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideRouter } from '@angular/router';
 import { authInterceptor } from './auth.interceptor';
 import { AuthService } from './auth.service';
 import { environment } from '../../../environments/environment';
@@ -11,8 +12,14 @@ describe('authInterceptor', () => {
   let authService: AuthService;
 
   beforeEach(() => {
+    // AuthService persists to sessionStorage, which Karma keeps between tests.
+    sessionStorage.clear();
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(withInterceptors([authInterceptor])), provideHttpClientTesting()],
+      providers: [
+        provideHttpClient(withInterceptors([authInterceptor])),
+        provideHttpClientTesting(),
+        provideRouter([]), // the interceptor injects Router to redirect on 401
+      ],
     });
     httpClient = TestBed.inject(HttpClient);
     httpMock = TestBed.inject(HttpTestingController);

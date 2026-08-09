@@ -52,7 +52,7 @@ Starts on http://localhost:4200 and proxies `/api` to the backend on `:8080`
 Full-stack and complete. Every feature from REQUIREMENTS.md is built, tested,
 and verified end to end against the real 10,000-employee dataset.
 
-**Backend** (Spring Boot, 46 tests):
+**Backend** (Spring Boot, 48 tests):
 - HTTP Basic auth with a single in-memory HR Manager account
 - Employee directory: paginated list with server-side search (name/code) and
   filters (department, country, level, status)
@@ -71,7 +71,7 @@ and verified end to end against the real 10,000-employee dataset.
 
 ### Verified
 
-Both suites pass (`mvn test` 46/46, `npm test` 18/18), the backend was driven
+Both suites pass (`mvn test` 48/48, `npm test` 18/18), the backend was driven
 end to end with `curl` against the running app on the seeded dataset (CRUD,
 salary history, search/filter, all analytics endpoints, and auth: 401 without
 credentials, 200 with), and the whole UI was walked through in a real browser:

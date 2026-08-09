@@ -12,7 +12,7 @@ or line managers.
 
 ## Scope & Features (In)
 1. **Employee directory** — list, search, filter (department, country, level,
-   employment status), sort, paginate. Must stay responsive at 10k rows
+   employment status), paginate. Must stay responsive at 10k rows
    (server-side filtering/pagination, not client-side loading of all records).
 2. **Employee profile** — view/edit core fields (name, id, department, job
    title/level, country, currency, employment status, hire date) and current salary.
@@ -67,5 +67,6 @@ or line managers.
 - Must comfortably handle 10,000 employee records: indexed queries, server-side
   pagination/filtering, and aggregate queries computed in the database rather
   than in application memory.
-- Because this is compensation data, correctness and auditability (who changed
-  a salary, when, and why) matter more than raw feature count.
+- Because this is compensation data, correctness and auditability (when a salary
+  changed and why — via dated, append-only salary records) matter more than raw
+  feature count.

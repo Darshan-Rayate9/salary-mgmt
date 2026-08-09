@@ -35,7 +35,7 @@ the assessment's open constraints.
 | Component library | Angular Material | Official, first-party; gives us data tables, pagination, forms, and dialogs without hand-rolling. |
 | Charts | ng2-charts (Chart.js wrapper) | Lightweight, well-documented, sufficient for bar/line/pie views on the analytics dashboard — no need for a heavier viz library at this scope. |
 | State management | Angular services + RxJS only (no NgRx) | Single role, moderate screen count, no cross-cutting shared state complex enough to justify NgRx's ceremony. Revisit if the app grows multiple collaborating modules. |
-| Auth | Spring Security + HTTP Basic (stateless) | One in-memory HR Manager account (see [REQUIREMENTS.md](REQUIREMENTS.md) — RBAC is explicitly out of scope). The assessment asks only for "basic authentication," and for a single-user internal tool HTTP Basic is exactly that: no user table, no token lifecycle. Angular holds the encoded credentials in memory (not `localStorage`) via an `AuthService`, attached to every request by an `HttpInterceptor`, with an `AuthGuard` on protected routes. |
+| Auth | Spring Security + HTTP Basic (stateless) | One in-memory HR Manager account (see [REQUIREMENTS.md](REQUIREMENTS.md) — RBAC is explicitly out of scope). The assessment asks only for "basic authentication," and for a single-user internal tool HTTP Basic is exactly that: no user table, no token lifecycle. Angular holds the encoded credential in `sessionStorage` (not `localStorage`) via an `AuthService`, attached to every request by an `HttpInterceptor`, with an `AuthGuard` on protected routes. sessionStorage survives a same-tab refresh but is cleared when the tab closes and is never written to disk long-term — chosen over localStorage so a *reversible* Basic credential isn't persisted on disk. The interceptor also clears the credential and redirects to login on any `401`, so a stale credential self-corrects. |
 | Packaging | Multi-stage Docker build | Stage 1 builds the Angular app; stage 2 builds the Spring Boot jar and copies the Angular `dist/` into `src/main/resources/static`; stage 3 is a slim JRE runtime image. Result: one container, one process, one port. |
 
 ## High-level architecture
@@ -60,6 +60,13 @@ flowchart LR
 
 Angular is served as static resources by the same Spring Boot process that
 serves the API — no CORS, no second service to deploy or keep in sync.
+
+Because the router uses HTML5 path-based URLs, `SecurityConfig` protects only
+`/api/**` (the data) and permits everything else (the static SPA shell and its
+assets), and a small `SpaForwardController` forwards client routes
+(`/employees`, `/dashboard`, `/login`, and their sub-paths) to `index.html`. So
+a hard refresh or deep link boots the SPA instead of hitting a `401`/`404`.
+Unmapped `/api/**` URLs still return the standard `404`.
 
 ## Repository layout
 
@@ -147,7 +154,7 @@ the credentials; there is no login endpoint.
 
 | Method | Endpoint | Purpose |
 |---|---|---|
-| GET | `/api/v1/employees` | Paginated list — filter by department/country/level/status, search by name/code, sort |
+| GET | `/api/v1/employees` | Paginated list — filter by department/country/level/status, search by name/code |
 | GET | `/api/v1/employees/{id}` | Employee detail incl. current salary |
 | POST | `/api/v1/employees` | Create employee |
 | PUT | `/api/v1/employees/{id}` | Update employee core fields |
@@ -192,7 +199,7 @@ Every non-2xx response uses one shape:
 
 | Scenario | Behavior |
 |---|---|
-| Wrong/missing credentials | API returns `401` in the standard error shape; Angular's `AuthService` clears the in-memory credentials and the guard redirects to login — no silent retry loop. |
+| Wrong/missing credentials | API returns `401` in the standard error shape; the Angular auth interceptor clears the stored (sessionStorage) credential and redirects to login — no silent retry loop. |
 | Unknown URL or malformed path param | `404` / `400` in the standard error shape (a bad `/employees/{id}` value is a `400`), never a bare `500` — the global handler maps `NoResourceFoundException`/`MethodArgumentTypeMismatchException` explicitly. |
 | SQLite file locked/unreachable | `/actuator/health` reports `DOWN`; requests fail fast with `503` — no retry-forever logic, since a local file lock resolves in milliseconds, not minutes. |
 | Duplicate salary-history submission (double-click) | Not de-duplicated server-side at this scope — accepted risk for a single-user internal tool, noted here rather than silently ignored. |
@@ -216,8 +223,9 @@ Every non-2xx response uses one shape:
 - Target: full suite under 30s, no network/filesystem/wall-clock dependencies.
 
 **Frontend** (Angular CLI default: Jasmine/Karma):
-- Component tests for employee list/table, salary-history form, and dashboard
-  chart components, with `HttpClientTestingModule` mocking the API.
+- Component test for the employee list/directory, with `HttpClientTesting`
+  mocking the API.
+- Service tests for the employee, salary-history, and analytics API clients.
 - Unit tests for `AuthService`, the auth interceptor, and the auth guard.
 
 ## Deployment
