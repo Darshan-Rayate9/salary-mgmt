@@ -13,6 +13,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { EmployeeService } from '../../core/services/employee.service';
 import { EmployeeSummary } from '../../core/models/employee.model';
+import { DEPARTMENTS, COUNTRIES, LEVELS } from '../../core/reference-data';
 
 @Component({
   selector: 'app-employee-list',
@@ -44,19 +45,10 @@ export class EmployeeListComponent implements OnInit {
   pageIndex = 0;
   loading = false;
 
-  // Filter dropdown options. The organisation's departments, countries and
-  // levels are a fixed, known set (see the seed script), so these are static
-  // rather than fetched from a facets endpoint - one less request and one less
-  // moving part for a single-org internal tool.
-  departments = [
-    'Customer Support', 'Design', 'Engineering', 'Finance', 'Human Resources',
-    'Legal', 'Marketing', 'Operations', 'Product', 'Sales',
-  ];
-  countries = [
-    'Australia', 'Brazil', 'Canada', 'France', 'Germany', 'India', 'Japan',
-    'Singapore', 'United Kingdom', 'United States',
-  ];
-  levels = ['L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7'];
+  // Filter dropdown options - shared with the create/edit form (see reference-data).
+  departments = DEPARTMENTS;
+  countries = COUNTRIES;
+  levels = LEVELS;
   statuses = ['ACTIVE', 'TERMINATED'];
 
   filterForm = this.fb.group({

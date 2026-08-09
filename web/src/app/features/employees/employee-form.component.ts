@@ -8,10 +8,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { EmployeeService } from '../../core/services/employee.service';
-
-const CURRENCIES = ['USD', 'GBP', 'EUR', 'INR', 'CAD', 'AUD', 'SGD', 'JPY', 'BRL'];
+import { DEPARTMENTS, COUNTRIES, LEVELS, CURRENCIES } from '../../core/reference-data';
 
 @Component({
   selector: 'app-employee-form',
@@ -26,6 +26,7 @@ const CURRENCIES = ['USD', 'GBP', 'EUR', 'INR', 'CAD', 'AUD', 'SGD', 'JPY', 'BRL
     MatSelectModule,
     MatButtonModule,
     MatIconModule,
+    MatDatepickerModule,
     MatSnackBarModule,
   ],
   templateUrl: './employee-form.component.html',
@@ -39,9 +40,13 @@ export class EmployeeFormComponent implements OnInit {
   private snackBar = inject(MatSnackBar);
 
   currencies = CURRENCIES;
+  departments = DEPARTMENTS;
+  countries = COUNTRIES;
+  levels = LEVELS;
   editId: number | null = null;
   saving = false;
   errorMessage: string | null = null;
+  today = new Date(); // datepicker [max] - can't hire in the future
 
   form = this.fb.group({
     employeeCode: ['', Validators.required],
@@ -53,7 +58,7 @@ export class EmployeeFormComponent implements OnInit {
     level: ['', Validators.required],
     country: ['', Validators.required],
     currencyCode: ['USD', Validators.required],
-    hireDate: ['', Validators.required],
+    hireDate: [null as Date | null, Validators.required],
   });
 
   get isEdit(): boolean {
@@ -76,7 +81,7 @@ export class EmployeeFormComponent implements OnInit {
           level: employee.level,
           country: employee.country,
           currencyCode: employee.currencyCode,
-          hireDate: employee.hireDate,
+          hireDate: this.parseIsoDate(employee.hireDate),
         });
       });
     }
@@ -88,7 +93,9 @@ export class EmployeeFormComponent implements OnInit {
     }
     this.saving = true;
     this.errorMessage = null;
-    const value = this.form.getRawValue();
+    const raw = this.form.getRawValue();
+    // The datepicker holds a Date; the API expects a "yyyy-MM-dd" string.
+    const value = { ...raw, hireDate: raw.hireDate ? this.toIsoDate(raw.hireDate) : '' };
 
     const done = {
       next: (employee: { id: number }) => {
@@ -110,5 +117,18 @@ export class EmployeeFormComponent implements OnInit {
     } else {
       this.employeeService.create(value as any).subscribe(done);
     }
+  }
+
+  // Parse an API "yyyy-MM-dd" string into a *local* Date (midnight local time),
+  // avoiding the UTC shift that new Date("yyyy-MM-dd") introduces.
+  private parseIsoDate(value: string): Date {
+    const [year, month, day] = value.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  }
+
+  // Format a Date back to "yyyy-MM-dd" using local components (no timezone shift).
+  private toIsoDate(date: Date): string {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
   }
 }

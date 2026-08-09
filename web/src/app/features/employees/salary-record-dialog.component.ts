@@ -10,6 +10,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { SalaryRecordCreateRequest } from '../../core/models/employee.model';
 
 export interface SalaryRecordDialogData {
@@ -30,6 +31,7 @@ const REASONS = ['Merit increase', 'Promotion', 'Market adjustment', 'Annual inc
     MatInputModule,
     MatSelectModule,
     MatButtonModule,
+    MatDatepickerModule,
   ],
   template: `
     <h2 mat-dialog-title>Add salary record</h2>
@@ -51,7 +53,9 @@ const REASONS = ['Merit increase', 'Promotion', 'Market adjustment', 'Annual inc
 
         <mat-form-field appearance="outline">
           <mat-label>Effective date</mat-label>
-          <input matInput type="date" formControlName="effectiveDate" />
+          <input matInput [matDatepicker]="effectivePicker" [max]="today" formControlName="effectiveDate" />
+          <mat-datepicker-toggle matIconSuffix [for]="effectivePicker"></mat-datepicker-toggle>
+          <mat-datepicker #effectivePicker></mat-datepicker>
         </mat-form-field>
 
         <mat-form-field appearance="outline">
@@ -88,11 +92,12 @@ export class SalaryRecordDialogComponent {
 
   currencies = CURRENCIES;
   reasons = REASONS;
+  today = new Date(); // datepicker [max] - a raise can't take effect in the future
 
   form = this.fb.group({
     amount: [null as number | null, [Validators.required, Validators.min(0.01)]],
     currencyCode: [this.data.currencyCode, Validators.required],
-    effectiveDate: [new Date().toISOString().substring(0, 10), Validators.required],
+    effectiveDate: [new Date() as Date | null, Validators.required],
     reason: ['Merit increase', Validators.required],
   });
 
@@ -104,7 +109,8 @@ export class SalaryRecordDialogComponent {
     const request: SalaryRecordCreateRequest = {
       amount: Number(value.amount),
       currencyCode: value.currencyCode!,
-      effectiveDate: value.effectiveDate!,
+      // The datepicker holds a Date; the API expects a "yyyy-MM-dd" string.
+      effectiveDate: this.toIsoDate(value.effectiveDate!),
       reason: value.reason!,
     };
     this.dialogRef.close(request);
@@ -112,5 +118,11 @@ export class SalaryRecordDialogComponent {
 
   cancel(): void {
     this.dialogRef.close();
+  }
+
+  // Format a Date to "yyyy-MM-dd" using local components (no timezone shift).
+  private toIsoDate(date: Date): string {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
   }
 }
