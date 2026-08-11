@@ -5,6 +5,7 @@ import { provideRouter } from '@angular/router';
 import { authInterceptor } from './auth.interceptor';
 import { AuthService } from './auth.service';
 import { environment } from '../../../environments/environment';
+import { pageOf } from '../testing/fixtures';
 
 describe('authInterceptor', () => {
   let httpClient: HttpClient;
@@ -33,7 +34,7 @@ describe('authInterceptor', () => {
     // The login probe itself flows through the interceptor and already carries the header.
     httpMock
       .expectOne((r) => r.url === `${environment.apiBaseUrl}/employees`)
-      .flush({ items: [], page: 1, limit: 1, total: 0, totalPages: 0, hasNext: false, hasPrev: false });
+      .flush(pageOf());
 
     httpClient.get(`${environment.apiBaseUrl}/employees/1`).subscribe();
 

@@ -3,6 +3,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { AuthService } from './auth.service';
 import { environment } from '../../../environments/environment';
+import { pageOf } from '../testing/fixtures';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -31,7 +32,7 @@ describe('AuthService', () => {
 
     const req = httpMock.expectOne((r) => r.url === `${environment.apiBaseUrl}/employees`);
     expect(req.request.method).toBe('GET');
-    req.flush({ items: [], page: 1, limit: 1, total: 0, totalPages: 0, hasNext: false, hasPrev: false });
+    req.flush(pageOf());
 
     expect(service.isAuthenticated()).toBeTrue();
     expect(service.getAuthHeader()).toBe('Basic ' + btoa('hr.manager:secret'));
@@ -52,7 +53,7 @@ describe('AuthService', () => {
     service.login('hr.manager', 'secret').subscribe();
     httpMock
       .expectOne((r) => r.url === `${environment.apiBaseUrl}/employees`)
-      .flush({ items: [], page: 1, limit: 1, total: 0, totalPages: 0, hasNext: false, hasPrev: false });
+      .flush(pageOf());
 
     service.logout();
 

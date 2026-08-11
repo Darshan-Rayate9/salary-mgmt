@@ -5,6 +5,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
 import { EmployeeListComponent } from './employee-list.component';
 import { environment } from '../../../environments/environment';
+import { pageOf } from '../../core/testing/fixtures';
 
 describe('EmployeeListComponent', () => {
   let fixture: ComponentFixture<EmployeeListComponent>;
@@ -27,8 +28,8 @@ describe('EmployeeListComponent', () => {
 
     const listReq = httpMock.expectOne((r) => r.url === `${environment.apiBaseUrl}/employees`);
     expect(listReq.request.params.get('page')).toBe('1');
-    listReq.flush({
-      items: [
+    listReq.flush(
+      pageOf([
         {
           id: 1,
           employeeCode: 'E-1001',
@@ -42,14 +43,8 @@ describe('EmployeeListComponent', () => {
           currentSalaryAmount: 102000,
           currentSalaryCurrency: 'GBP',
         },
-      ],
-      page: 1,
-      limit: 20,
-      total: 1,
-      totalPages: 1,
-      hasNext: false,
-      hasPrev: false,
-    });
+      ]),
+    );
 
     expect(fixture.componentInstance.employees.length).toBe(1);
     expect(fixture.componentInstance.total).toBe(1);

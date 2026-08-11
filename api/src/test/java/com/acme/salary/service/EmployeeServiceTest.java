@@ -18,11 +18,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import static com.acme.salary.support.EmployeeBuilder.anEmployee;
+import static com.acme.salary.support.SalaryRecordBuilder.aSalaryRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -54,8 +55,8 @@ class EmployeeServiceTest {
 
     @Test
     void getEmployee_found_includesLatestSalary() {
-        Employee employee = sampleEmployee(1L, "E-1001");
-        SalaryRecord latest = sampleSalaryRecord(employee, "102000.00", "GBP");
+        Employee employee = anEmployee().withId(1L).withCode("E-1001").build();
+        SalaryRecord latest = aSalaryRecord().forEmployee(employee).withAmount("102000.00").withCurrency("GBP").build();
         when(employeeRepository.findById(1L)).thenReturn(Optional.of(employee));
         when(salaryRecordRepository.findFirstByEmployeeIdOrderByEffectiveDateDescIdDesc(1L))
                 .thenReturn(Optional.of(latest));
@@ -68,7 +69,7 @@ class EmployeeServiceTest {
 
     @Test
     void getEmployee_noSalaryRecordYet_currentSalaryIsNull() {
-        Employee employee = sampleEmployee(1L, "E-1001");
+        Employee employee = anEmployee().withId(1L).build();
         when(employeeRepository.findById(1L)).thenReturn(Optional.of(employee));
         when(salaryRecordRepository.findFirstByEmployeeIdOrderByEffectiveDateDescIdDesc(1L))
                 .thenReturn(Optional.empty());
@@ -149,7 +150,7 @@ class EmployeeServiceTest {
 
     @Test
     void updateEmployee_emailTakenByAnotherEmployee_throwsConflict() {
-        Employee employee = sampleEmployee(1L, "E-1001");
+        Employee employee = anEmployee().withId(1L).build();
         when(employeeRepository.findById(1L)).thenReturn(Optional.of(employee));
         when(employeeRepository.existsByEmailAndIdNot("taken@acme.test", 1L)).thenReturn(true);
 
@@ -164,7 +165,7 @@ class EmployeeServiceTest {
 
     @Test
     void deleteEmployee_marksTerminatedAndNeverHardDeletes() {
-        Employee employee = sampleEmployee(1L, "E-1001");
+        Employee employee = anEmployee().withId(1L).build();
         when(employeeRepository.findById(1L)).thenReturn(Optional.of(employee));
 
         newService().deleteEmployee(1L);
@@ -173,34 +174,6 @@ class EmployeeServiceTest {
         verify(employeeRepository).save(captor.capture());
         assertThat(captor.getValue().getEmploymentStatus()).isEqualTo(EmploymentStatus.TERMINATED);
         verify(employeeRepository, never()).delete(any());
-    }
-
-    private Employee sampleEmployee(Long id, String code) {
-        Employee employee = new Employee();
-        employee.setId(id);
-        employee.setEmployeeCode(code);
-        employee.setFirstName("Ada");
-        employee.setLastName("Lovelace");
-        employee.setEmail("ada@acme.test");
-        employee.setDepartment("Engineering");
-        employee.setJobTitle("Principal Engineer");
-        employee.setLevel("L6");
-        employee.setCountry("United Kingdom");
-        employee.setCurrencyCode("GBP");
-        employee.setEmploymentStatus(EmploymentStatus.ACTIVE);
-        employee.setHireDate(LocalDate.of(2019, 3, 1));
-        return employee;
-    }
-
-    private SalaryRecord sampleSalaryRecord(Employee employee, String amount, String currency) {
-        SalaryRecord record = new SalaryRecord();
-        record.setEmployee(employee);
-        record.setAmount(new BigDecimal(amount));
-        record.setCurrencyCode(currency);
-        record.setUsdEquivalent(new BigDecimal(amount));
-        record.setEffectiveDate(LocalDate.of(2024, 6, 1));
-        record.setReason("Merit increase");
-        return record;
     }
 
     private EmployeeCreateRequest sampleCreateRequest(String code) {

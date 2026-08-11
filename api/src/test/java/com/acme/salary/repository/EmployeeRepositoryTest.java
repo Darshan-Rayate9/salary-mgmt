@@ -3,16 +3,16 @@ package com.acme.salary.repository;
 import com.acme.salary.dto.EmployeeSummary;
 import com.acme.salary.entity.Employee;
 import com.acme.salary.entity.EmploymentStatus;
-import com.acme.salary.entity.SalaryRecord;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.PageRequest;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import static com.acme.salary.support.EmployeeBuilder.anEmployee;
+import static com.acme.salary.support.SalaryRecordBuilder.aSalaryRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -93,30 +93,16 @@ class EmployeeRepositoryTest {
 
     private Employee persistEmployee(
             String code, String firstName, String lastName, String department, EmploymentStatus status) {
-        Employee employee = new Employee();
-        employee.setEmployeeCode(code);
-        employee.setFirstName(firstName);
-        employee.setLastName(lastName);
-        employee.setEmail(code.toLowerCase() + "@acme.test");
-        employee.setDepartment(department);
-        employee.setJobTitle("Engineer");
-        employee.setLevel("L4");
-        employee.setCountry("United Kingdom");
-        employee.setCurrencyCode("GBP");
-        employee.setEmploymentStatus(status);
-        employee.setHireDate(LocalDate.of(2020, 1, 1));
-        return employeeRepository.save(employee);
+        return employeeRepository.save(anEmployee()
+                .withCode(code).withName(firstName, lastName).inDepartment(department).withStatus(status)
+                .build());
     }
 
     private void saveSalaryRecord(
             Employee employee, String amount, String usdEquivalent, LocalDate effectiveDate, String reason) {
-        SalaryRecord record = new SalaryRecord();
-        record.setEmployee(employee);
-        record.setAmount(new BigDecimal(amount));
-        record.setCurrencyCode("GBP");
-        record.setUsdEquivalent(new BigDecimal(usdEquivalent));
-        record.setEffectiveDate(effectiveDate);
-        record.setReason(reason);
-        salaryRecordRepository.save(record);
+        salaryRecordRepository.save(aSalaryRecord()
+                .forEmployee(employee).withAmount(amount).withUsdEquivalent(usdEquivalent)
+                .effectiveOn(effectiveDate).because(reason)
+                .build());
     }
 }

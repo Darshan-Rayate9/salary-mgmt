@@ -3,16 +3,16 @@ package com.acme.salary.repository;
 import com.acme.salary.dto.GroupAggregateResponse;
 import com.acme.salary.entity.Employee;
 import com.acme.salary.entity.EmploymentStatus;
-import com.acme.salary.entity.SalaryRecord;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+import static com.acme.salary.support.EmployeeBuilder.anEmployee;
+import static com.acme.salary.support.SalaryRecordBuilder.aSalaryRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -112,32 +112,18 @@ class AnalyticsRepositoryTest {
 
     private Employee seedEmployee(String code, String department, String level, String country, String usdSalary) {
         Employee employee = seedEmployeeWithNoSalary(code, department, level, country);
-
-        SalaryRecord record = new SalaryRecord();
-        record.setEmployee(employee);
-        record.setAmount(new BigDecimal(usdSalary));
-        record.setCurrencyCode("USD");
-        record.setUsdEquivalent(new BigDecimal(usdSalary));
-        record.setEffectiveDate(LocalDate.of(2024, 1, 1));
-        record.setReason("Base salary");
-        salaryRecordRepository.save(record);
-
+        salaryRecordRepository.save(aSalaryRecord()
+                .forEmployee(employee)
+                .withAmount(usdSalary).withCurrency("USD").withUsdEquivalent(usdSalary)
+                .effectiveOn(LocalDate.of(2024, 1, 1)).because("Base salary")
+                .build());
         return employee;
     }
 
     private Employee seedEmployeeWithNoSalary(String code, String department, String level, String country) {
-        Employee employee = new Employee();
-        employee.setEmployeeCode(code);
-        employee.setFirstName("Test");
-        employee.setLastName(code);
-        employee.setEmail(code.toLowerCase() + "@acme.test");
-        employee.setDepartment(department);
-        employee.setJobTitle("Engineer");
-        employee.setLevel(level);
-        employee.setCountry(country);
-        employee.setCurrencyCode("USD");
-        employee.setEmploymentStatus(EmploymentStatus.ACTIVE);
-        employee.setHireDate(LocalDate.of(2020, 1, 1));
-        return employeeRepository.save(employee);
+        return employeeRepository.save(anEmployee()
+                .withCode(code).withName("Test", code)
+                .inDepartment(department).atLevel(level).inCountry(country).withCurrency("USD")
+                .build());
     }
 }

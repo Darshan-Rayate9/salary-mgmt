@@ -17,6 +17,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import static com.acme.salary.support.EmployeeBuilder.anEmployee;
+import static com.acme.salary.support.SalaryRecordBuilder.aSalaryRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -49,9 +51,9 @@ class SalaryHistoryServiceTest {
 
     @Test
     void listHistory_returnsRecordsNewestFirst() {
-        Employee employee = sampleEmployee();
+        Employee employee = anEmployee().withId(1L).build();
         when(employeeRepository.findById(1L)).thenReturn(Optional.of(employee));
-        SalaryRecord record = sampleRecord(employee);
+        SalaryRecord record = aSalaryRecord().forEmployee(employee).build();
         when(salaryRecordRepository.findByEmployeeIdOrderByEffectiveDateDescIdDesc(1L))
                 .thenReturn(List.of(record));
 
@@ -63,7 +65,7 @@ class SalaryHistoryServiceTest {
 
     @Test
     void addRecord_computesUsdEquivalentViaFixedRateTable() {
-        Employee employee = sampleEmployee();
+        Employee employee = anEmployee().withId(1L).build();
         when(employeeRepository.findById(1L)).thenReturn(Optional.of(employee));
         when(salaryRecordRepository.save(any(SalaryRecord.class))).thenAnswer(inv -> {
             SalaryRecord r = inv.getArgument(0);
@@ -86,7 +88,7 @@ class SalaryHistoryServiceTest {
 
     @Test
     void addRecord_unsupportedCurrency_throwsIllegalArgument() {
-        Employee employee = sampleEmployee();
+        Employee employee = anEmployee().withId(1L).build();
         when(employeeRepository.findById(1L)).thenReturn(Optional.of(employee));
 
         var request = new SalaryRecordCreateRequest(
@@ -98,7 +100,7 @@ class SalaryHistoryServiceTest {
 
     @Test
     void addRecord_futureEffectiveDate_throwsIllegalArgument() {
-        Employee employee = sampleEmployee();
+        Employee employee = anEmployee().withId(1L).build();
         when(employeeRepository.findById(1L)).thenReturn(Optional.of(employee));
 
         // A salary can't take effect before it's even been decided.
@@ -112,7 +114,7 @@ class SalaryHistoryServiceTest {
 
     @Test
     void addRecord_effectiveDateBeforeHireDate_throwsIllegalArgument() {
-        Employee employee = sampleEmployee(); // hired 2019-03-01
+        Employee employee = anEmployee().withId(1L).build(); // hired 2019-03-01 (builder default)
         when(employeeRepository.findById(1L)).thenReturn(Optional.of(employee));
 
         var request = new SalaryRecordCreateRequest(
@@ -121,27 +123,5 @@ class SalaryHistoryServiceTest {
         assertThatThrownBy(() -> newService().addRecord(1L, request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("hire date");
-    }
-
-    private Employee sampleEmployee() {
-        Employee employee = new Employee();
-        employee.setId(1L);
-        employee.setEmployeeCode("E-1001");
-        employee.setFirstName("Ada");
-        employee.setLastName("Lovelace");
-        employee.setHireDate(LocalDate.of(2019, 3, 1));
-        return employee;
-    }
-
-    private SalaryRecord sampleRecord(Employee employee) {
-        SalaryRecord record = new SalaryRecord();
-        record.setId(1L);
-        record.setEmployee(employee);
-        record.setAmount(new BigDecimal("102000.00"));
-        record.setCurrencyCode("GBP");
-        record.setUsdEquivalent(new BigDecimal("129540.00"));
-        record.setEffectiveDate(LocalDate.of(2024, 6, 1));
-        record.setReason("Merit increase");
-        return record;
     }
 }
