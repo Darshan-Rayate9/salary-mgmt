@@ -83,13 +83,20 @@ class AnalyticsRepositoryTest {
 
         List<GroupAggregateResponse> byDept = analyticsRepository.byDepartment();
 
-        var engineering = byDept.stream().filter(g -> g.groupName().equals("Engineering")).findFirst().orElseThrow();
-        assertThat(engineering.headcount()).isEqualTo(2);
-        assertThat(engineering.avgSalaryUsd()).isEqualByComparingTo("160000.00");
-
-        var sales = byDept.stream().filter(g -> g.groupName().equals("Sales")).findFirst().orElseThrow();
-        assertThat(sales.headcount()).isEqualTo(1);
-        assertThat(sales.avgSalaryUsd()).isEqualByComparingTo("90000.00");
+        assertThat(byDept)
+                .filteredOn(group -> group.groupName().equals("Engineering"))
+                .singleElement()
+                .satisfies(engineering -> {
+                    assertThat(engineering.headcount()).isEqualTo(2);
+                    assertThat(engineering.avgSalaryUsd()).isEqualByComparingTo("160000.00");
+                });
+        assertThat(byDept)
+                .filteredOn(group -> group.groupName().equals("Sales"))
+                .singleElement()
+                .satisfies(sales -> {
+                    assertThat(sales.headcount()).isEqualTo(1);
+                    assertThat(sales.avgSalaryUsd()).isEqualByComparingTo("90000.00");
+                });
     }
 
     @Test

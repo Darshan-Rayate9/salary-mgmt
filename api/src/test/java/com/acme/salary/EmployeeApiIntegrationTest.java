@@ -57,14 +57,15 @@ class EmployeeApiIntegrationTest {
 
     @Test
     void listEmployees_limitQueryParam_isActuallyRespected() throws Exception {
-        for (int i = 1; i <= 7; i++) {
-            createEmployee("E-API%03d".formatted(i));
-        }
+        createEmployee("E-API001");
+        createEmployee("E-API002");
+        createEmployee("E-API003");
 
-        mockMvc.perform(get("/api/v1/employees?page=1&limit=3").with(httpBasic(USER, PASSWORD)))
+        // Three employees exist; a limit smaller than that must cap the page.
+        mockMvc.perform(get("/api/v1/employees?page=1&limit=2").with(httpBasic(USER, PASSWORD)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items.length()").value(3))
-                .andExpect(jsonPath("$.limit").value(3));
+                .andExpect(jsonPath("$.items.length()").value(2))
+                .andExpect(jsonPath("$.limit").value(2));
     }
 
     @Test

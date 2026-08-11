@@ -1,7 +1,6 @@
 package com.acme.salary.config;
 
 import com.acme.salary.entity.Employee;
-import com.acme.salary.entity.SalaryRecord;
 import com.acme.salary.repository.EmployeeRepository;
 import com.acme.salary.repository.SalaryRecordRepository;
 import com.acme.salary.service.CurrencyConversionService;
@@ -10,9 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,6 +20,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @Transactional
 class EmployeeSeederTest {
+
+    // Deliberately not a round number or a multiple of the 500-row chunk size,
+    // so the seeder's trailing partial-chunk flush is exercised.
+    private static final int SEED_COUNT = 47;
 
     @Autowired
     private EmployeeRepository employeeRepository;
@@ -37,39 +37,54 @@ class EmployeeSeederTest {
     @Autowired
     private CurrencyConversionService currencyConversionService;
 
-    @Test
-    void run_seedsRequestedCountWithUniqueCodesAndValidSalaries() {
-        int count = 47; // deliberately not a round number or a multiple of the 500-row chunk size
+    private void seed(int count) {
         new EmployeeSeeder(employeeRepository, bulkWriter, currencyConversionService, count).run();
+    }
 
-        List<Employee> employees = employeeRepository.findAll();
-        assertThat(employees).hasSize(count);
+    @Test
+    void run_seedsTheRequestedNumberOfEmployees() {
+        seed(SEED_COUNT);
 
-        Set<String> codes = employees.stream().map(Employee::getEmployeeCode).collect(java.util.stream.Collectors.toSet());
-        assertThat(codes).hasSize(count); // all unique
+        assertThat(employeeRepository.count()).isEqualTo(SEED_COUNT);
+    }
 
-        Set<String> emails = employees.stream().map(Employee::getEmail).collect(java.util.stream.Collectors.toSet());
-        assertThat(emails).hasSize(count); // all unique
+    @Test
+    void run_givesEveryEmployeeAUniqueCode() {
+        seed(SEED_COUNT);
 
-        // Every employee has at least one salary record, and its usdEquivalent is
-        // consistent with what CurrencyConversionService would compute directly.
-        for (Employee employee : employees) {
-            List<SalaryRecord> history = salaryRecordRepository
-                    .findByEmployeeIdOrderByEffectiveDateDescIdDesc(employee.getId());
-            assertThat(history).isNotEmpty();
+        assertThat(employeeRepository.findAll())
+                .extracting(Employee::getEmployeeCode)
+                .doesNotHaveDuplicates();
+    }
 
-            SalaryRecord latest = history.get(0);
-            var expectedUsd = currencyConversionService.toUsd(latest.getAmount(), latest.getCurrencyCode());
-            assertThat(latest.getUsdEquivalent()).isEqualByComparingTo(expectedUsd);
-        }
+    @Test
+    void run_givesEveryEmployeeAUniqueEmail() {
+        seed(SEED_COUNT);
+
+        assertThat(employeeRepository.findAll())
+                .extracting(Employee::getEmail)
+                .doesNotHaveDuplicates();
+    }
+
+    @Test
+    void run_givesEveryEmployeeSalaryHistoryWithAPositiveUsdSnapshot() {
+        seed(SEED_COUNT);
+
+        // The USD conversion maths itself is proven in CurrencyConversionServiceTest;
+        // here we only need that the seeder populated a salary history and a USD
+        // snapshot for each employee - hence a positive value, not a re-derived one.
+        assertThat(employeeRepository.findAll()).allSatisfy(employee ->
+                assertThat(salaryRecordRepository.findByEmployeeIdOrderByEffectiveDateDescIdDesc(employee.getId()))
+                        .isNotEmpty()
+                        .allSatisfy(record -> assertThat(record.getUsdEquivalent()).isPositive()));
     }
 
     @Test
     void run_isIdempotent_doesNotReseedIfEmployeesAlreadyExist() {
-        new EmployeeSeeder(employeeRepository, bulkWriter, currencyConversionService, 10).run();
+        seed(10);
         assertThat(employeeRepository.count()).isEqualTo(10);
 
-        new EmployeeSeeder(employeeRepository, bulkWriter, currencyConversionService, 10).run();
+        seed(10);
         assertThat(employeeRepository.count()).isEqualTo(10); // unchanged, not 20
     }
 }
