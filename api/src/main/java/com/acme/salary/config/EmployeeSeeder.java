@@ -5,8 +5,7 @@ import com.acme.salary.service.CurrencyConversionService;
 import com.acme.salary.service.EmployeeBulkWriter;
 import com.acme.salary.service.NewEmployeeRow;
 import com.acme.salary.service.NewSalaryRow;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
@@ -29,9 +28,9 @@ import java.util.Random;
  */
 @Component
 @Profile("!test")
+@Slf4j
 public class EmployeeSeeder implements CommandLineRunner {
 
-    private static final Logger log = LoggerFactory.getLogger(EmployeeSeeder.class);
     private static final int CHUNK_SIZE = 500;
     // Fixed seed: reproducible-looking demo data across runs, not cryptographic randomness.
     private static final long RANDOM_SEED = 42L;

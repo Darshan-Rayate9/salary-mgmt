@@ -27,6 +27,16 @@ trade-offs in ARCHITECTURE.md.
 - Node.js 20+ and npm
 - (Optional, for the container build) Docker
 
+> **Build with JDK 21.** Lombok (1.18.34, pinned transitively by Spring Boot
+> 3.3.4) doesn't run its annotation processor on newer JDKs (24+). If your
+> default `java` is newer, the Maven build fails with a cascade of `cannot find
+> symbol` errors on Lombok-generated getters/setters. Point Maven at a JDK 21
+> via `JAVA_HOME` — for example, with Homebrew's `openjdk@21`:
+>
+>     export JAVA_HOME="$(brew --prefix openjdk@21)/libexec/openjdk.jdk/Contents/Home"
+>
+> (The container build is unaffected — the Dockerfile pins its own JDK.)
+
 ## Running locally
 
 ### Backend

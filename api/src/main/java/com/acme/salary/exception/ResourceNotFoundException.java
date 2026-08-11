@@ -1,5 +1,8 @@
 package com.acme.salary.exception;
 
+import lombok.Getter;
+
+@Getter
 public class ResourceNotFoundException extends RuntimeException {
 
     private final String code;
@@ -7,9 +10,5 @@ public class ResourceNotFoundException extends RuntimeException {
     public ResourceNotFoundException(String code, String message) {
         super(message);
         this.code = code;
-    }
-
-    public String getCode() {
-        return code;
     }
 }
